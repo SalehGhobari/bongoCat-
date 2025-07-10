@@ -1,116 +1,106 @@
 #include <iostream>
+#include <vector>
 #include "raylib.h"
 
 #define ASSETSPATH "./assets/test/" 
 
-void goofyDelay()
+
+
+class bongoCat
 {
-    double delay = 1000;
-    while(true)
-    {
-        delay-= 10 * GetFrameTime();; // convert frame time to ms
-        if (delay <= 0)
+    public:
+        float speed = 0.1;
+        float durationLeft = 0.1;
+        bool idle = true;
+        Texture2D bongoTextures[8];
+        std::string imageNames [8] = {"idle.png", "afteridle.png", "lefthit.png", "afterlefthit.png", "righthit.png", "afterrighthit.png", "doublehit.png", "afterdoublehit.png"};
+        std::string soundNames [3] = {"bongo1.mp3", "bongo2.mp3", "bongo3.mp3"};
+        Sound bongoSounds[3];
+        bool playedSound = false;
+
+        void initBongoCat()
         {
-            break;
+            for (int i = 0 ; i < 8 ; i++)
+            {
+                Image bongoCatImg =  LoadImage((std::string(ASSETSPATH) + imageNames[i]).c_str());
+                Texture2D bongoCatTexture = LoadTextureFromImage(bongoCatImg);
+                bongoTextures[i] = bongoCatTexture;
+                UnloadImage(bongoCatImg);
+            }
+            InitAudioDevice();
+            for (int i = 0 ; i < 3; i++)
+            {
+                Sound bongoSound = LoadSound((std::string(ASSETSPATH) + soundNames[i]).c_str());
+                bongoSounds[i] = bongoSound;
+            }
+            
         }
-    }
-}
+    
+        void updateCat()
+        {
+            if (IsKeyDown(KEY_A) && IsKeyDown(KEY_D))
+            {
+                DrawTexture(bongoTextures[6], 0, 0, WHITE);
+                if (!playedSound)
+                {
+                    PlaySound(bongoSounds[2]);
+                    playedSound = true;
+                }
+            }
+            else if (IsKeyDown(KEY_A))
+            {
+                DrawTexture(bongoTextures[2], 0 , 0, WHITE);
+                if (!playedSound)
+                {
+                    PlaySound(bongoSounds[0]);
+                    playedSound = true;
+                }               
+            }
+            else if (IsKeyDown(KEY_D))
+            {
+                DrawTexture(bongoTextures[4], 0 , 0, WHITE);
+                if (!playedSound)
+                {
+                    PlaySound(bongoSounds[1]);
+                    playedSound = true;
+                }  
+            }
+            else
+            {
+                DrawTexture(bongoTextures[0], 0, 0, WHITE);
+                playedSound = false;
+            }
+
+        }
+
+
+};
+
+
 
 int main() 
 {
     const int screenWidth = 394;
     const int screenHeight = 400;
-    SetConfigFlags(FLAG_WINDOW_TRANSPARENT); 
     InitWindow(screenWidth, screenHeight, "bongo cat ?");
-    SetWindowState(FLAG_WINDOW_UNDECORATED);
     SetWindowPosition(0, 0);  
     SetTargetFPS(60);
-    Image bongoCatImg =  LoadImage(ASSETSPATH "idle.png"); 
-    Texture2D bongoCatIdle = LoadTextureFromImage(bongoCatImg);
-    UnloadImage(bongoCatImg);
 
-    bongoCatImg = LoadImage(ASSETSPATH "afteridle.png");
-    Texture2D bongoCatAfterIdle = LoadTextureFromImage(bongoCatImg);
-    UnloadImage(bongoCatImg);
-
-    bongoCatImg = LoadImage(ASSETSPATH "lefthit.png");
-    Texture2D bongoCatLeftHit = LoadTextureFromImage(bongoCatImg);
-    UnloadImage(bongoCatImg);
-
-    bongoCatImg = LoadImage(ASSETSPATH "afterlefthit.png");
-    Texture2D bongoCatAfterLeftHit = LoadTextureFromImage(bongoCatImg);
-    UnloadImage(bongoCatImg);
-
-    bongoCatImg = LoadImage(ASSETSPATH "righthit.png");
-    Texture2D bongoCatRightHit = LoadTextureFromImage(bongoCatImg);
-    UnloadImage(bongoCatImg);
-
-    bongoCatImg = LoadImage(ASSETSPATH "afterrighthit.png");
-    Texture2D bongoCatAfterRightHit = LoadTextureFromImage(bongoCatImg);
-    UnloadImage(bongoCatImg);
-
-    bongoCatImg = LoadImage(ASSETSPATH "doublehit.png");
-    Texture2D bongoCatDoubleHit = LoadTextureFromImage(bongoCatImg);
-    UnloadImage(bongoCatImg);
-
-    bongoCatImg = LoadImage(ASSETSPATH "afterdoublehit.png");
-    Texture2D bongoCatAfterDoubleHit = LoadTextureFromImage(bongoCatImg);
-    UnloadImage(bongoCatImg);
-
-    InitAudioDevice();
-    Sound bongo1 = LoadSound(ASSETSPATH "bongo1.mp3");
-    Sound bongo2 = LoadSound(ASSETSPATH "bongo2.mp3");
-    Sound bongo3 = LoadSound(ASSETSPATH "bongo3.mp3");
     
-    // to animate left hit animate the following : idle->afteridle->lefthit>afterlefthit->idle
-    // to animate right hit animate the following : idle->afteridle->righthit>afterrighthit->idle
-    //
-    
+    bongoCat cat;
+    cat.initBongoCat();
+
     while(!WindowShouldClose())
     {
 
         BeginDrawing();
 
 
+        cat.updateCat();
 
 
-        ClearBackground(WHITE);  // Fully transparent if using alpha blending
-
-        DrawTexture(bongoCatIdle, 0, 0, WHITE); 
-        if(IsKeyPressed(KEY_A))
-        {
-            PlaySound(bongo1);
-            DrawTexture(bongoCatAfterIdle, 0, 0, WHITE);
-            goofyDelay();
-            DrawTexture(bongoCatLeftHit, 0, 0, WHITE);
-            goofyDelay();
-            DrawTexture(bongoCatAfterLeftHit, 0, 0, WHITE);
-            goofyDelay();
-        }
-        if(IsKeyPressed(KEY_D))
-        {
-
-            PlaySound(bongo2);
-            DrawTexture(bongoCatAfterIdle, 0, 0, WHITE);
-            goofyDelay();
-            DrawTexture(bongoCatRightHit, 0, 0, WHITE);
-            goofyDelay();
-            DrawTexture(bongoCatAfterRightHit, 0, 0, WHITE);
-            goofyDelay();
-        }
-        if(IsKeyPressed(KEY_D) && IsKeyPressed(KEY_A))
-        {
-
-            PlaySound(bongo3);
-            DrawTexture(bongoCatAfterIdle, 0, 0, WHITE);
-            goofyDelay();
-            DrawTexture(bongoCatDoubleHit, 0, 0, WHITE);
-            goofyDelay();
-            DrawTexture(bongoCatAfterDoubleHit, 0, 0, WHITE);
-            goofyDelay();
-        }
-        // std::cout << GetFrameTime() * 1000 << "\n";
-
+        ClearBackground(WHITE);
+        
 
 
         EndDrawing();
